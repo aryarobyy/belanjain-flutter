@@ -6,7 +6,7 @@ import 'products/electronic_category.dart';
 import 'products/footware_category.dart';
 
 class MainScreen extends StatefulWidget {
-  const MainScreen({Key? key}) : super(key: key);
+  const MainScreen({super.key});
 
   @override
   State<MainScreen> createState() => _MainScreenState();
@@ -79,7 +79,7 @@ class _MainScreenState extends State<MainScreen> {
         border: InputBorder.none,
         hintStyle: TextStyle(color: Colors.white54),
       ),
-      style: TextStyle(color: Colors.white, fontSize: 16.0),
+      style: const TextStyle(color: Colors.white, fontSize: 16.0),
       onChanged: (query) => setState(() => _searchQuery = query),
     );
   }
@@ -156,9 +156,9 @@ class _MainScreenState extends State<MainScreen> {
                             print("Current category changed to: $_currentCategory");
                           });
                         },
-                        child: Text("All"),
+                        child: const Text("All"),
                       ),
-                      SizedBox(width: 8),
+                      const SizedBox(width: 8),
                       ElevatedButton(
                         onPressed: () {
                           setState(() {
@@ -166,9 +166,9 @@ class _MainScreenState extends State<MainScreen> {
                             print("Current category changed to: $_currentCategory");
                           });
                         },
-                        child: Text("Accessories"),
+                        child: const Text("Accessories"),
                       ),
-                      SizedBox(width: 8),
+                      const SizedBox(width: 8),
                       ElevatedButton(
                         onPressed: () {
                           setState(() {
@@ -176,9 +176,9 @@ class _MainScreenState extends State<MainScreen> {
                             print("Current category changed to: $_currentCategory");
                           });
                         },
-                        child: Text("Electronics"),
+                        child: const Text("Electronics"),
                       ),
-                      SizedBox(width: 8),
+                      const SizedBox(width: 8),
                       ElevatedButton(
                         onPressed: () {
                           setState(() {
@@ -186,7 +186,7 @@ class _MainScreenState extends State<MainScreen> {
                             print("Current category changed to: $_currentCategory");
                           });
                         },
-                        child: Text("Footwear"),
+                        child: const Text("Footwear"),
                       ),
                     ],
                   ),

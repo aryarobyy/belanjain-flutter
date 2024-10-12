@@ -7,10 +7,10 @@ class AccessoriesCategory extends StatelessWidget {
   final List<dynamic> filteredProducts;
 
   const AccessoriesCategory({
-    Key? key,
+    super.key,
     required this.productProvider,
     required this.filteredProducts,
-  }) : super(key: key);
+  });
 
 
   @override

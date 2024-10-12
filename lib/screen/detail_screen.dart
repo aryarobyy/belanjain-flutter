@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class DetailScreen extends StatelessWidget {
   final Map<String, dynamic> product;
 
-  const DetailScreen({Key? key, required this.product}) : super(key: key);
+  const DetailScreen({super.key, required this.product});
 
   @override
   Widget build(BuildContext context) {

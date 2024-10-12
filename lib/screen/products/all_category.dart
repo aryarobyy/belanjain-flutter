@@ -7,10 +7,10 @@ class AllCategory extends StatelessWidget {
   final List<dynamic> filteredProducts;
 
   const AllCategory({
-    Key? key,
+    super.key,
     required this.productProvider,
     required this.filteredProducts,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

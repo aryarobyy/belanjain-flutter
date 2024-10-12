@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:tugas_dicoding/screen/login_screen.dart';
 import 'main_screen.dart';
-import 'login_screen.dart';
 
 int halaman = 0;
 
 class DashboardScreen extends StatefulWidget {
-  const DashboardScreen({Key? key}) : super(key: key);
+  const DashboardScreen({super.key});
 
   @override
   State<DashboardScreen> createState() => _DashboardScreenState();
@@ -57,7 +56,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Center(child: const Text('Belanjain')),
+        title: const Center(child: Text('Belanjain')),
       ),
       body: Center(
         child: Padding(
