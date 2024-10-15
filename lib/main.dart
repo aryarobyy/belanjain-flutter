@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tugas_dicoding/screen/login_screen.dart';
+import './screen/dashboard_screen.dart';
 
 
 void main() => runApp(const MyApp());

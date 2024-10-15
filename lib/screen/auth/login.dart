@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../model/user_model.dart';
 import '../main_screen.dart';
-import 'package:tugas_dicoding/fetchs/user/_user.dart';
+// import 'package:tugas_dicoding/fetchs/user/_user.dart';
+import 'package:tugas_dicoding/fetchs/_user.dart';
 import 'register.dart';
 
 class _Login extends StatefulWidget {
@@ -131,8 +132,6 @@ class Login extends StatelessWidget {
                             ],
                           ),
                         ),
-
-
                       ],
                     ),
                   ),
