@@ -121,7 +121,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 } else {
                                   Navigator.of(context).push(
                                     MaterialPageRoute(
-                                      builder: (context) => const LoginScreen(),
+                                      builder: (context) => const MainScreen(),
                                     ),
                                   );
                                 }

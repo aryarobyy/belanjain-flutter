@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tugas_dicoding/screen/auth/login.dart';
 import '../../fetchs/_user.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
 
 class Register extends StatefulWidget {
   const Register({super.key});
@@ -67,7 +66,6 @@ class _RegisterState extends State<Register> {
     }
   }
 
-// ... rest of the widget code remains the same
 
   @override
   Widget build(BuildContext context) {
