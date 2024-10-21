@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:tugas_dicoding/screen/products/all_category.dart';
+import 'package:tugas_dicoding/screen/detail_screen.dart';
 import 'product_provider.dart';
-import 'products/accessoris_category.dart';
-import 'products/electronic_category.dart';
-import 'products/footware_category.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -14,11 +11,12 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   final ProductProvider _productProvider = ProductProvider();
-  final double cardWidth = 170.0;
-  final double cardHeight = 230.0;
   String _currentCategory = 'All';
   String _searchQuery = '';
   bool _isSearching = false;
+  final TextEditingController _searchController = TextEditingController();
+
+  final List<String> categories = ['All', 'Accessories', 'Electronics', 'Footwear'];
 
   @override
   void initState() {
@@ -40,24 +38,6 @@ class _MainScreenState extends State<MainScreen> {
     }).toList();
   }
 
-
-  Widget _getCategoryWidget() {
-    List<dynamic> filteredProducts = _getFilteredProducts();
-
-    if (_currentCategory == 'All') {
-      return AllCategory(productProvider: _productProvider, filteredProducts: filteredProducts);
-    } else if (_currentCategory == 'Accessories') {
-      return AccessoriesCategory(productProvider: _productProvider, filteredProducts: filteredProducts);
-    } else if (_currentCategory == 'Electronics') {
-      return ElectronicCategory(productProvider: _productProvider, filteredProducts: filteredProducts);
-    } else if (_currentCategory == 'Footwear') {
-      return FootwearCategory(productProvider: _productProvider, filteredProducts: filteredProducts);
-    } else {
-      return AllCategory(productProvider: _productProvider, filteredProducts: filteredProducts);
-    }
-  }
-
-
   void _startSearch() {
     setState(() {
       _isSearching = true;
@@ -68,46 +48,8 @@ class _MainScreenState extends State<MainScreen> {
     setState(() {
       _isSearching = false;
       _searchQuery = '';
+      _searchController.clear();
     });
-  }
-
-  Widget _buildSearchField() {
-    return TextField(
-      autofocus: true,
-      decoration: const InputDecoration(
-        hintText: 'Search for products...',
-        border: InputBorder.none,
-        hintStyle: TextStyle(color: Colors.white54),
-      ),
-      style: const TextStyle(color: Colors.white, fontSize: 16.0),
-      onChanged: (query) => setState(() => _searchQuery = query),
-    );
-  }
-
-  List<Widget> _buildActions() {
-    if (_isSearching) {
-      return <Widget>[
-        IconButton(
-          icon: const Icon(Icons.clear),
-          onPressed: () {
-            if (_searchQuery.isEmpty) {
-              _stopSearch();
-              return;
-            }
-            setState(() {
-              _searchQuery = '';
-            });
-          },
-        ),
-      ];
-    }
-
-    return <Widget>[
-      IconButton(
-        icon: const Icon(Icons.search),
-        onPressed: _startSearch,
-      ),
-    ];
   }
 
   @override
@@ -115,91 +57,134 @@ class _MainScreenState extends State<MainScreen> {
     return Scaffold(
       appBar: AppBar(
         title: _isSearching
-            ? _buildSearchField()
-            : InkWell(
-          onTap: () {
+            ? TextField(
+          controller: _searchController,
+          autofocus: true,
+          decoration: const InputDecoration(
+            hintText: 'Search for products...',
+            border: InputBorder.none,
+          ),
+          onChanged: (value) {
             setState(() {
-              _currentCategory = 'All';
+              _searchQuery = value;
             });
           },
-          child: const Text(
-            "Belanjain",
-            style: TextStyle(
-              fontSize: 20,
+        )
+            : const Text('Belanjain'),
+        actions: [
+          if (_isSearching)
+            IconButton(
+              icon: const Icon(Icons.close),
+              onPressed: _stopSearch,
+            )
+          else
+            IconButton(
+              icon: const Icon(Icons.search),
+              onPressed: _startSearch,
+            ),
+        ],
+      ),
+      body: Column(
+        children: [
+          SizedBox(
+            height: 50,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: categories.length,
+              itemBuilder: (context, index) {
+                final category = categories[index];
+                final isSelected = _currentCategory == category;
+
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: ChoiceChip(
+                    label: Text(
+                      category,
+                      style: TextStyle(
+                        color: isSelected ? Colors.white : Colors.black,
+                      ),
+                    ),
+                    selected: isSelected,
+                    selectedColor: Colors.blue,
+                    backgroundColor: Colors.grey[200],
+                    onSelected: (bool selected) {
+                      setState(() {
+                        _currentCategory = category;
+                      });
+                    },
+                  ),
+                );
+              },
             ),
           ),
-        ),
-        actions: _buildActions(),
-      ),
-      body: LayoutBuilder(
-        builder: (BuildContext context, BoxConstraints constraints) {
-          if (_productProvider.products.isEmpty) {
-            return const Center(child: CircularProgressIndicator());
-          }
 
-          double availableWidth = constraints.maxWidth - 32;
-          int crossAxisCount = (availableWidth / cardWidth).floor();
-          crossAxisCount = crossAxisCount < 2 ? 2 : crossAxisCount;
+          const SizedBox(height: 16),
 
-          return Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
-                      ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            _currentCategory = 'All';
-                            print("Current category changed to: $_currentCategory");
-                          });
-                        },
-                        child: const Text("All"),
+          Expanded(
+            child: _productProvider.products.isEmpty
+                ? const Center(child: CircularProgressIndicator())
+                : GridView.builder(
+              padding: const EdgeInsets.all(8.0),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+                childAspectRatio: 0.7,
+              ),
+              itemCount: _getFilteredProducts().length,
+              itemBuilder: (context, index) {
+                final product = _getFilteredProducts()[index];
+
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => DetailScreen(product: product),
                       ),
-                      const SizedBox(width: 8),
-                      ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            _currentCategory = 'Accessories';
-                            print("Current category changed to: $_currentCategory");
-                          });
-                        },
-                        child: const Text("Accessories"),
+                    );
+                  },
+                  child: Card(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Center(
+                            child: Image.asset(
+                              product['image'],
+                              height: 100, // Adjust image height
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            product['title'],
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            "Toko: ${product['toko']}",
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4),
+                          Text("Harga: Rp ${product['harga']}"),
+                        ],
                       ),
-                      const SizedBox(width: 8),
-                      ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            _currentCategory = 'Electronics';
-                            print("Current category changed to: $_currentCategory");
-                          });
-                        },
-                        child: const Text("Electronics"),
-                      ),
-                      const SizedBox(width: 8),
-                      ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            _currentCategory = 'Footwear';
-                            print("Current category changed to: $_currentCategory");
-                          });
-                        },
-                        child: const Text("Footwear"),
-                      ),
-                    ],
+                    ),
                   ),
-                ),
-                Expanded(
-                  child: SingleChildScrollView(
-                    child: _getCategoryWidget(),
-                  ),
-                ),
-              ],
+                );
+              },
             ),
-          );
-        },
+          ),
+        ],
       ),
     );
   }

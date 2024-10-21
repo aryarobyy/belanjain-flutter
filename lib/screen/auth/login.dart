@@ -1,7 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:tugas_dicoding/fetchs/_user.dart';
-import 'package:tugas_dicoding/screen/auth/register.dart';
-import 'package:tugas_dicoding/screen/main_screen.dart';
+part of 'auth.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -30,10 +27,12 @@ class _LoginState extends State<Login> {
       });
 
       try {
-        final data = await loginUser(_usernameController.text, _passwordController.text);
+        final data = await loginUser(
+            _usernameController.text,
+            _passwordController.text
+        );
 
         print(data);
-        if (data['password'] == _passwordController.text){
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text("User Login successfully")),
@@ -43,9 +42,7 @@ class _LoginState extends State<Login> {
               MaterialPageRoute(builder: (context) => const MainScreen()),
             );
           }
-        }  else {
-          throw Exception('Incorrect password');
-        }
+
 
       } catch (e) {
         if (mounted) {

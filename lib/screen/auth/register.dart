@@ -1,6 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:tugas_dicoding/screen/auth/login.dart';
-import '../../fetchs/_user.dart';
+part of 'auth.dart';
 
 class Register extends StatefulWidget {
   const Register({super.key});
@@ -66,23 +64,27 @@ class _RegisterState extends State<Register> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+    final isLandscape = mediaQuery.orientation == Orientation.landscape;
+    final isKeyboardOpen = mediaQuery.viewInsets.bottom > 0;
+
     return Scaffold(
       appBar: AppBar(
         title: const Center(child: Text("Register")),
       ),
-      body: Center(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            double width = constraints.maxWidth < 600 ? constraints.maxWidth * 0.9 : 400;
-            return Padding(
-              padding: const EdgeInsets.all(16.0),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Center(
+            child: Padding(
+              padding: EdgeInsets.all(isLandscape ? 8.0 : 16.0),
               child: Form(
                 key: _formKey,
                 child: SizedBox(
-                  width: width,
+                  width: isLandscape
+                      ? mediaQuery.size.width * 0.6
+                      : mediaQuery.size.width * 0.9,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -174,7 +176,8 @@ class _RegisterState extends State<Register> {
                               onTap: () {
                                 Navigator.push(
                                   context,
-                                  MaterialPageRoute(builder: (context) => const Login()),
+                                  MaterialPageRoute(
+                                      builder: (context) => const Login()),
                                 );
                               },
                               child: const Text(
@@ -192,8 +195,8 @@ class _RegisterState extends State<Register> {
                   ),
                 ),
               ),
-            );
-          },
+            ),
+          ),
         ),
       ),
     );

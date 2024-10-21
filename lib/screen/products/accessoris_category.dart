@@ -1,14 +1,10 @@
-import 'package:flutter/material.dart';
-import '../detail_screen.dart';
-import '../product_provider.dart';
+part of 'products.dart';
 
 class AccessoriesCategory extends StatelessWidget {
-  final ProductProvider productProvider;
   final List<dynamic> filteredProducts;
 
   const AccessoriesCategory({
     super.key,
-    required this.productProvider,
     required this.filteredProducts,
   });
 

@@ -60,7 +60,7 @@ Future<Map<String, dynamic>> loginUser(String username, String password) async {
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       print('User logged in successfully: $username');
-      return data;  // Return user data and token
+      return data;
     } else {
       throw Exception('Failed to log in: ${response.body}');
     }

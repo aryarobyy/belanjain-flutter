@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:tugas_dicoding/screen/auth/login.dart';
+import 'package:tugas_dicoding/screen/auth/auth.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -12,10 +12,8 @@ class LoginScreen extends StatelessWidget {
       ),
       body: LayoutBuilder(
         builder: (context, constraints) {
-      double width = constraints.maxWidth < 600
-          ? constraints.maxWidth * 0.9 : 400;
-      return const Center(
-        child: Login(),
+        return const Center(
+          child: AuthScreen(),
       );
         }
     )
