@@ -1,4 +1,4 @@
-package com.example.tugas_dicoding
+package com.example.belanjain
 
 import io.flutter.embedding.android.FlutterActivity
 

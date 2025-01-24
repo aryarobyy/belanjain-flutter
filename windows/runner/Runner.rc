@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "tugas_dicoding" "\0"
+            VALUE "FileDescription", "belanjain" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "tugas_dicoding" "\0"
+            VALUE "InternalName", "belanjain" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2024 com.example. All rights reserved." "\0"
-            VALUE "OriginalFilename", "tugas_dicoding.exe" "\0"
-            VALUE "ProductName", "tugas_dicoding" "\0"
+            VALUE "OriginalFilename", "belanjain.exe" "\0"
+            VALUE "ProductName", "belanjain" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END
