@@ -1,12 +1,10 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 class ProductModel {
   final String productId;
   final String title;
   final String imageUrl;
   final String desc;
   final String category;
-  final DateTime price;
+  final double price;
 
   ProductModel({
     required this.productId,
@@ -17,25 +15,21 @@ class ProductModel {
     required this.price,
   });
 
-  factory ProductModel.fromMap(Map<String, dynamic> data,) {
-    if (!data.containsKey('email')) {
-      throw ArgumentError('Email is required');
-    }
-
+  factory ProductModel.fromJson(Map<String, dynamic> json) {
     return ProductModel(
-      productId: data['id'] ?? "",
-      title: data['title'] ?? "",
-      imageUrl: data['image'] ?? "",
-      desc: data['desc'] ?? "",
-      category: data['category'] ?? "",
-      price: data['price'],
+      productId: json['id']?.toString() ?? "",
+      title: json['title'] ?? "",
+      imageUrl: json['image'] ?? "",
+      desc: json['desc'] ?? "",
+      category: json['category'] ?? "",
+      price: (json['price'] as num?)?.toDouble() ?? 0.0,
     );
   }
 
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toJson() {
     return {
       'id': productId,
-      'name': title,
+      'title': title,
       'image': imageUrl,
       'desc': desc,
       'category': category,
@@ -45,18 +39,19 @@ class ProductModel {
 
   ProductModel copyWith({
     String? productId,
-    String? name,
+    String? title,
     String? imageUrl,
     String? desc,
     String? category,
+    double? price,
   }) {
     return ProductModel(
       productId: productId ?? this.productId,
-      title: name ?? this.title,
+      title: title ?? this.title,
       imageUrl: imageUrl ?? this.imageUrl,
       desc: desc ?? this.desc,
       category: category ?? this.category,
-      price: price,
+      price: price ?? this.price,
     );
   }
 }

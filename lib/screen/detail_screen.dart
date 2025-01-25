@@ -1,7 +1,8 @@
+import 'package:belanjain/models/product_model.dart';
 import 'package:flutter/material.dart';
 
 class DetailScreen extends StatelessWidget {
-  final Map<String, dynamic> product;
+  final ProductModel product;
 
   const DetailScreen({super.key, required this.product});
 
@@ -13,7 +14,7 @@ class DetailScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(product['title']),
+        title: Text(product.title),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -21,14 +22,16 @@ class DetailScreen extends StatelessWidget {
             ? Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (product['image'] != null && product['image'].isNotEmpty)
+            if (product.imageUrl.isNotEmpty)
               Flexible(
                 flex: 2,
                 child: FittedBox(
                   fit: BoxFit.cover,
-                  child: Image.asset(
-                    "${product['image']}",
+                  child: Image.network(
+                    product.imageUrl,
                     height: 400,
+                    errorBuilder: (context, error, stackTrace) =>
+                        Icon(Icons.broken_image, size: 100),
                   ),
                 ),
               ),
@@ -39,7 +42,7 @@ class DetailScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "ID: ${product['id']}",
+                    "ID: ${product.productId}",
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -48,7 +51,7 @@ class DetailScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 24),
                   Text(
-                    "Title: ${product['title']}",
+                    "Title: ${product.title}",
                     style: const TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
@@ -56,14 +59,22 @@ class DetailScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 24),
                   Text(
-                    "Toko: ${product['toko']}",
+                    "Description: ${product.desc}",
                     style: const TextStyle(
                       fontSize: 22,
                     ),
                   ),
                   const SizedBox(height: 24),
                   Text(
-                    "Harga: Rp ${product['harga']}",
+                    "Category: ${product.category}",
+                    style: const TextStyle(
+                      fontSize: 22,
+                      color: Colors.blue,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    "Price: Rp ${product.price.toStringAsFixed(2)}",
                     style: const TextStyle(
                       fontSize: 22,
                       color: Colors.green,
@@ -77,17 +88,19 @@ class DetailScreen extends StatelessWidget {
             : Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (product['image'] != null && product['image'].isNotEmpty)
+            if (product.imageUrl.isNotEmpty)
               FittedBox(
                 fit: BoxFit.cover,
-                child: Image.asset(
-                  "${product['image']}",
+                child: Image.network(
+                  product.imageUrl,
                   height: 300,
+                  errorBuilder: (context, error, stackTrace) =>
+                      Icon(Icons.broken_image, size: 100),
                 ),
               ),
             const SizedBox(height: 16),
             Text(
-              "ID: ${product['id']}",
+              "ID: ${product.productId}",
               style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
@@ -96,7 +109,7 @@ class DetailScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              "Title: ${product['title']}",
+              "Title: ${product.title}",
               style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -104,14 +117,22 @@ class DetailScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              "Toko: ${product['toko']}",
+              "Description: ${product.desc}",
               style: const TextStyle(
                 fontSize: 18,
               ),
             ),
             const SizedBox(height: 16),
             Text(
-              "Harga: Rp ${product['harga']}",
+              "Category: ${product.category}",
+              style: const TextStyle(
+                fontSize: 18,
+                color: Colors.blue,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              "Price: Rp ${product.price.toStringAsFixed(2)}",
               style: const TextStyle(
                 fontSize: 18,
                 color: Colors.green,
