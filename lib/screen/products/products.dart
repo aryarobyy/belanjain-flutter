@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../detail_screen.dart';
-import '../product_provider.dart';
+import '../../providers/product_provider.dart';
 
 part 'accessoris_category.dart';
 part 'all_category.dart';

@@ -1,15 +1,13 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart'; //buat kIsWeb, buat cek itu web atau bukan
-import 'package:tugas_dicoding/model/user_model.dart';
-
+import 'package:belanjain/model/user_model.dart';
 
 const String baseUrl = 'http://10.0.2.2:5000';
 const String localUrl = 'http://localhost:5000';
 const String url = kIsWeb ? localUrl : baseUrl;
 
 Future<User> fetchUser() async {
-
   final response = await http.get(Uri.parse('$url/auth'));
 
   if (response.statusCode == 200) {
@@ -19,7 +17,8 @@ Future<User> fetchUser() async {
   }
 }
 
-Future<void> postUser(String name, String username, String email, String password) async {
+Future<void> postUser(
+    String name, String username, String email, String password) async {
   final response = await http.post(
     Uri.parse('$url/auth/register'),
     headers: <String, String>{

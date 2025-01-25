@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:tugas_dicoding/screen/login_screen.dart';
+import 'package:belanjain/screen/login_screen.dart';
 import 'main_screen.dart';
 
 int halaman = 0;
@@ -16,17 +16,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
     {
       'title': 'Belanjain',
       'subtitle': 'Nikmati Diskon yang besar dari belanjain',
-      'image': 'assets/images/shopping.png',
+      'image': 'assets/images/shopping1.png',
     },
     {
       'title': 'Belanjain',
       'subtitle': 'Banyak Barang Menarik',
-      'image': 'assets/images/gia1.png',
+      'image': 'assets/images/shopping2.png',
     },
     {
       'title': 'Belanjain',
       'subtitle': 'Jangan Lewatkan Penawaran Terbaik',
-      'image': 'assets/images/gia2.png',
+      'image': 'assets/images/shopping3.png',
     },
   ];
 
@@ -67,7 +67,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
             children: [
               Text(
                 _pages[halaman]['title'],
-                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                style:
+                    const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -94,29 +95,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     children: [
                       Center(
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                          child:SizedBox(
-                            width: MediaQuery.of(context).size.width < 600
-                                ? 130
-                                : 200,
-                            child: ElevatedButton(
-                              onPressed: halaman > 0 ? _previousPage : null,
-                              child: const Text('Kembali'),
-                            ),
-                          )
-                        ),
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 8.0),
+                            child: SizedBox(
+                              width: MediaQuery.of(context).size.width < 600
+                                  ? 130
+                                  : 200,
+                              child: ElevatedButton(
+                                onPressed: halaman > 0 ? _previousPage : null,
+                                child: const Text('Kembali'),
+                              ),
+                            )),
                       ),
                       Center(
                         child: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 8.0),
                           child: SizedBox(
-                              width: MediaQuery.of(context).size.width < 600
-                                  ? 130
-                                  : 200,
+                            width: MediaQuery.of(context).size.width < 600
+                                ? 130
+                                : 200,
                             child: ElevatedButton(
                               onPressed: () {
-                                if (halaman < _pages.length - 1)
-                                {
+                                if (halaman < _pages.length - 1) {
                                   _nextPage();
                                 } else {
                                   Navigator.of(context).push(

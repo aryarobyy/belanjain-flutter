@@ -14,6 +14,7 @@ class _RegisterState extends State<Register> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _isLoading = false;
+  final AuthService _auth = AuthService();
 
   @override
   void dispose() {
@@ -31,13 +32,12 @@ class _RegisterState extends State<Register> {
       });
 
       try {
-        await postUser(
-          _nameController.text,
-          _usernameController.text,
-          _emailController.text,
-          _passwordController.text,
-        );
-
+        await _auth.registerUser(
+            email: _emailController.text.toLowerCase(),
+            name: _nameController.text,
+            password: _passwordController.text,
+            username: _usernameController.text
+          );
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text("User registered successfully")),
