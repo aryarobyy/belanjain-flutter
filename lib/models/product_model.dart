@@ -4,6 +4,8 @@ class ProductModel {
   final String imageUrl;
   final String desc;
   final String category;
+  final String status;
+  final double rating;
   final double price;
 
   ProductModel({
@@ -12,6 +14,8 @@ class ProductModel {
     required this.imageUrl,
     required this.desc,
     required this.category,
+    required this.status,
+    required this.rating,
     required this.price,
   });
 
@@ -19,9 +23,11 @@ class ProductModel {
     return ProductModel(
       productId: json['id']?.toString() ?? "",
       title: json['title'] ?? "",
-      imageUrl: json['image'] ?? "",
-      desc: json['desc'] ?? "",
+      imageUrl: json['thumbnail'] ?? "",
+      desc: json['description'] ?? "",
       category: json['category'] ?? "",
+      status: json['availabilityStatus'] ?? "",
+      rating: (json['rating'] as num?)?.toDouble() ?? 0.0,
       price: (json['price'] as num?)?.toDouble() ?? 0.0,
     );
   }
@@ -30,9 +36,11 @@ class ProductModel {
     return {
       'id': productId,
       'title': title,
-      'image': imageUrl,
-      'desc': desc,
+      'thumbnail': imageUrl,
+      'description': desc,
       'category': category,
+      'availabilityStatus': status,
+      'rating': rating,
       'price': price,
     };
   }
@@ -43,6 +51,8 @@ class ProductModel {
     String? imageUrl,
     String? desc,
     String? category,
+    String? status,
+    double? rating,
     double? price,
   }) {
     return ProductModel(
@@ -51,6 +61,8 @@ class ProductModel {
       imageUrl: imageUrl ?? this.imageUrl,
       desc: desc ?? this.desc,
       category: category ?? this.category,
+      status: status ?? this.status,
+      rating: rating ?? this.rating,
       price: price ?? this.price,
     );
   }

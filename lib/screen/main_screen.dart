@@ -2,6 +2,7 @@ import 'package:belanjain/fetchs/_product.dart';
 import 'package:belanjain/models/product_model.dart';
 import 'package:belanjain/providers/product_provider.dart';
 import 'package:belanjain/screen/detail_screen.dart';
+import 'package:belanjain/screen/kamera_screen.dart';
 import 'package:flutter/material.dart';
 
 class MainScreen extends StatefulWidget {
@@ -19,7 +20,7 @@ class _MainScreenState extends State<MainScreen> {
   final TextEditingController _searchController = TextEditingController();
   late Future<ProductModel?> future;
 
-  final List<String> categories = ['All', 'Accessories', 'Electronics', 'Footwear'];
+  final List<String> categories = ['All', 'fragrances', 'furniture', 'beauty', 'groceries', ];
 
   @override
   void initState() {
@@ -58,7 +59,6 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context){
     return Scaffold(
-
       appBar: AppBar(
         title: _isSearching
             ? TextField(
@@ -77,9 +77,23 @@ class _MainScreenState extends State<MainScreen> {
             : const Text('Belanjain'),
         actions: [
           if (_isSearching)
-            IconButton(
-              icon: const Icon(Icons.close),
-              onPressed: _stopSearch,
+            Row(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.camera_alt_outlined),
+                  onPressed: () {
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) {
+                          return KameraScreen();
+                        })
+                    );
+                  },
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: _stopSearch,
+                ),
+              ],
             )
           else
             IconButton(
@@ -93,240 +107,148 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Widget _buildFiltered2(BuildContext context) {
-    return Scaffold(
-      body: Column(
-        children: [
-          // Category Filter Bar
-          SizedBox(
-            height: 50,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: categories.length,
-              itemBuilder: (context, index) {
-                final category = categories[index];
-                final isSelected = _currentCategory == category;
-
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  child: ChoiceChip(
-                    label: Text(
-                      category,
-                      style: TextStyle(
-                        color: isSelected ? Colors.white : Colors.black,
-                      ),
+    return Column(
+      children: [
+        SizedBox(
+          height: 50,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: categories.length,
+            itemBuilder: (context, index) {
+              final category = categories[index];
+              final isSelected = _currentCategory == category;
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: ChoiceChip(
+                  label: Text(
+                    category,
+                    style: TextStyle(
+                      color: isSelected ? Colors.white : Colors.black,
                     ),
-                    selected: isSelected,
-                    selectedColor: Colors.blue,
-                    backgroundColor: Colors.grey[200],
-                    onSelected: (bool selected) {
-                      setState(() {
-                        _currentCategory = category;
-                      });
-                    },
                   ),
-                );
-              },
-            ),
+                  selected: isSelected,
+                  selectedColor: Colors.blue,
+                  backgroundColor: Colors.grey[200],
+                  onSelected: (bool selected) {
+                    setState(() {
+                      _currentCategory = category;
+                    });
+                  },
+                ),
+              );
+            },
           ),
+        ),
+        const SizedBox(height: 16),
+        Expanded(
+          child: FutureBuilder<List<ProductModel>>(
+            future: ProductService().getProducts(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              } else if (snapshot.hasError) {
+                return Center(
+                  child: Text('Error: ${snapshot.error}'),
+                );
+              } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                return const Center(
+                  child: Text('No products available.'),
+                );
+              } else {
+                final filteredProducts = snapshot.data!.where((product) {
+                  final matchesSearch = product.title.toLowerCase().contains(_searchQuery.toLowerCase());
+                  final matchesCategory = _currentCategory == 'All' || product.category == _currentCategory;
+                  return matchesSearch && matchesCategory;
+                }).toList();
 
-          const SizedBox(height: 16),
-          Expanded(
-            child: FutureBuilder<List<ProductModel>>(
-              future: ProductService().getProducts(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  return Center(
-                    child: Text('Error: ${snapshot.error}'),
-                  );
-                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                if (filteredProducts.isEmpty) {
                   return const Center(
-                    child: Text('No products available.'),
-                  );
-                } else {
-                  final products = snapshot.data!
-                      .where((product) =>
-                  _currentCategory == "All" ||
-                      product.category == _currentCategory)
-                      .toList();
-
-                  return GridView.builder(
-                    padding: const EdgeInsets.all(8.0),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      crossAxisSpacing: 16,
-                      mainAxisSpacing: 16,
-                      childAspectRatio: 0.7,
-                    ),
-                    itemCount: products.length,
-                    itemBuilder: (context, index) {
-                      final product = products[index];
-
-                      return GestureDetector(
-                        onTap: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  DetailScreen(product: product),
-                            ),
-                          );
-                        },
-                        child: Card(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10.0),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Center(
-                                  child: Image.network(
-                                    product.imageUrl,
-                                    height: 100, // Adjust image height
-                                    errorBuilder: (context, error, stackTrace) =>
-                                        Icon(Icons.broken_image),
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  product.title,
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  "Toko: ${product.desc}",
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                const SizedBox(height: 4),
-                                Text("Harga: Rp ${product.price.toString()}"),
-                              ],
-                            ),
-                          ),
-                        ),
-                      );
-                    },
+                    child: Text('No products match your search or category filter.'),
                   );
                 }
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
-  Widget _buildFiltered(BuildContext context) {
-    return Scaffold(
-      body: Column(
-        children: [
-          SizedBox(
-            height: 50,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: categories.length,
-              itemBuilder: (context, index) {
-                final category = categories[index];
-                final isSelected = _currentCategory == category;
-
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                  child: ChoiceChip(
-                    label: Text(
-                      category,
-                      style: TextStyle(
-                        color: isSelected ? Colors.white : Colors.black,
-                      ),
-                    ),
-                    selected: isSelected,
-                    selectedColor: Colors.blue,
-                    backgroundColor: Colors.grey[200],
-                    onSelected: (bool selected) {
-                      setState(() {
-                        _currentCategory = category;
-                      });
-                    },
+                return GridView.builder(
+                  padding: const EdgeInsets.all(8.0),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                    childAspectRatio: 0.7,
                   ),
-                );
-              },
-            ),
-          ),
+                  itemCount: filteredProducts.length,
+                  itemBuilder: (context, index) {
+                    final product = filteredProducts[index];
 
-          const SizedBox(height: 16),
-
-          Expanded(
-            child: _productProvider.products.isEmpty
-                ? const Center(child: CircularProgressIndicator())
-                : GridView.builder(
-              padding: const EdgeInsets.all(8.0),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                childAspectRatio: 0.7,
-              ),
-              itemCount: _getFilteredProducts().length,
-              itemBuilder: (context, index) {
-                final product = _getFilteredProducts()[index];
-
-                return GestureDetector(
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => DetailScreen(product: product),
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => DetailScreen(product: product),
+                          ),
+                        );
+                      },
+                      child: Card(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10.0),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Center(
+                                child: Image.network(
+                                  product.imageUrl,
+                                  height: 100,
+                                  errorBuilder: (context, error, stackTrace) => const Icon(Icons.broken_image),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                product.title,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  const Text(
+                                    "Rate:",
+                                    style: TextStyle(fontSize: 16),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  const Icon(
+                                    Icons.star,
+                                    size: 16,
+                                    color: Colors.amber,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    "${product.rating}",
+                                    style: const TextStyle(fontSize: 16),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Text("Price: \$${product.price.toString()}"),
+                              const SizedBox(height: 4),
+                              Text("Status: ${product.status}"),
+                            ],
+                          ),
+                        ),
                       ),
                     );
                   },
-                  child: Card(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10.0),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Center(
-                            child: Image.asset(
-                              product['image'],
-                              height: 100, // Adjust image height
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            product['title'],
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            "Toko: ${product['toko']}",
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 4),
-                          Text("Harga: Rp ${product['harga']}"),
-                        ],
-                      ),
-                    ),
-                  ),
                 );
-              },
-            ),
+              }
+            },
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

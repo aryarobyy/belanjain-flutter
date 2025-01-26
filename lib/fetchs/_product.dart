@@ -5,17 +5,22 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
 
-final String productUrl = dotenv.env['PRODUCT_API'] ?? " ";
+final String productUrl = dotenv.env['PRODUCT_API_2'] ?? " ";
 
 class ProductService {
   Future<List<ProductModel>> getProducts() async {
     final res = await http.get(Uri.parse(productUrl));
 
     if (res.statusCode == 200) {
-      final List<dynamic> data = jsonDecode(res.body);
-      return data.map((e) => ProductModel.fromJson(e)).toList();
+      final Map<String, dynamic> jsonResponse = json.decode(res.body);
+      if (jsonResponse.containsKey('products') && jsonResponse['products'] is List) {
+        final List<dynamic> productList = jsonResponse['products'];
+        return productList.map((item) => ProductModel.fromJson(item)).toList();
+      } else {
+        throw Exception("Expected a list in the 'data' field but got: ${jsonResponse['products']}");
+      }
     } else {
-      throw Exception('Failed to fetch products');
+      throw Exception("Failed to fetch products: ${res.statusCode}");
     }
   }
 
