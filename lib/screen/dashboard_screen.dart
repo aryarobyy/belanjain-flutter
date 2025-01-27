@@ -37,7 +37,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       } else if (halaman == _pages.length) {
         Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (context) => const MainScreen(),
+            builder: (context) => const MainScreen(inputCategory: "All"),
           ),
         );
       }
@@ -121,7 +121,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 } else {
                                   Navigator.of(context).push(
                                     MaterialPageRoute(
-                                      builder: (context) => const MainScreen(),
+                                      builder: (context) => const MainScreen(inputCategory: "All"),
                                     ),
                                   );
                                 }

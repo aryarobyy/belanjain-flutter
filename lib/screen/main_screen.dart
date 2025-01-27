@@ -6,7 +6,11 @@ import 'package:belanjain/screen/kamera_screen.dart';
 import 'package:flutter/material.dart';
 
 class MainScreen extends StatefulWidget {
-  const MainScreen({super.key});
+  final String inputCategory;
+  const MainScreen({
+    super.key,
+    required this.inputCategory,
+  });
 
   @override
   State<MainScreen> createState() => _MainScreenState();
@@ -18,28 +22,18 @@ class _MainScreenState extends State<MainScreen> {
   String _searchQuery = '';
   bool _isSearching = false;
   final TextEditingController _searchController = TextEditingController();
-  late Future<ProductModel?> future;
 
   final List<String> categories = ['All', 'fragrances', 'furniture', 'beauty', 'groceries', ];
 
   @override
   void initState() {
     super.initState();
+    if(widget.inputCategory != null ){
+      _currentCategory = widget.inputCategory;
+    };
     _productProvider.loadProducts().then((_) {
       setState(() {});
     });
-  }
-
-  List<dynamic> _getFilteredProducts() {
-    return _productProvider.products.where((product) {
-      String title = product['title'] ?? '';
-      String category = product['category'] ?? '';
-
-      bool matchesSearch = title.toLowerCase().contains(_searchQuery.toLowerCase());
-      bool matchesCategory = _currentCategory == 'All' || category == _currentCategory;
-
-      return matchesSearch && matchesCategory;
-    }).toList();
   }
 
   void _startSearch() {
@@ -163,10 +157,10 @@ class _MainScreenState extends State<MainScreen> {
 
                 if (filteredProducts.isEmpty) {
                   return const Center(
-                    child: Text('No products match your search or category filter.'),
+                    child: Text(
+                        'No products match your search or category filter.'),
                   );
                 }
-
                 return GridView.builder(
                   padding: const EdgeInsets.all(8.0),
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -178,7 +172,6 @@ class _MainScreenState extends State<MainScreen> {
                   itemCount: filteredProducts.length,
                   itemBuilder: (context, index) {
                     final product = filteredProducts[index];
-
                     return GestureDetector(
                       onTap: () {
                         Navigator.of(context).push(

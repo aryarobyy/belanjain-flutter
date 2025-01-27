@@ -1,8 +1,7 @@
 import 'dart:io';
-
-import 'package:belanjain/services/labeling_service.dart';
+import 'package:belanjain/screen/main_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:google_ml_kit/google_ml_kit.dart';
 
 class ImageViewPage extends StatefulWidget {
   final String imagePath;
@@ -12,12 +11,39 @@ class ImageViewPage extends StatefulWidget {
   State<ImageViewPage> createState() => _ImageViewPageState();
 }
 
-
 class _ImageViewPageState extends State<ImageViewPage> {
-  String? _path;
-  ImagePicker? _imagePicker;
+  bool isLoading = true;
+  List<ImageLabel> labels = [];
+  String error = '';
 
-  bool isLoading = false;
+  @override
+  void initState() {
+    super.initState();
+    processImage();
+  }
+
+  Future<void> processImage() async {
+    try {
+      final inputImage = InputImage.fromFilePath(widget.imagePath);
+      final imageLabeler = ImageLabeler(
+        options: ImageLabelerOptions(confidenceThreshold: 0.7),
+      );
+
+      final detectedLabels = await imageLabeler.processImage(inputImage);
+
+      setState(() {
+        labels = detectedLabels;
+        isLoading = false;
+      });
+
+      await imageLabeler.close();
+    } catch (e) {
+      setState(() {
+        error = 'Error processing image: $e';
+        isLoading = false;
+      });
+    }
+  }
 
   @override
   void dispose() {
@@ -35,10 +61,88 @@ class _ImageViewPageState extends State<ImageViewPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Captured Image'),
+        title: const Text('Hasil analisa'),
       ),
-      body: Center(
-        child: Image.file(File(widget.imagePath)),
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Image.file(
+              File(widget.imagePath),
+              height: 300,
+              fit: BoxFit.contain,
+            ),
+            const SizedBox(height: 20),
+            if (isLoading)
+              const Center(
+                child: CircularProgressIndicator(),
+              )
+            else if (error.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text(
+                  error,
+                  style: const TextStyle(color: Colors.red),
+                  textAlign: TextAlign.center,
+                ),
+              )
+            else
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Objek terdeteksi:',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    if (labels.isEmpty)
+                      const Text(
+                        'Tidak ada objek terdeteksi',
+                        style: TextStyle(fontStyle: FontStyle.italic),
+                      ),
+                      labels.where((label) => label.confidence > 0.8).isNotEmpty
+                      ? ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: labels.where((label) => label.confidence > 0.8).length,
+                      itemBuilder: (context, index) {
+                      final filteredLabels = labels.where((label) => label.confidence > 0.8).toList();
+                      final label = filteredLabels[index];
+                        return Card(
+                          margin: const EdgeInsets.symmetric(vertical: 4),
+                          child: ListTile(
+                          title: Text(label.label),
+                            subtitle: Text(
+                            'Ketepatan: ${(label.confidence * 100).toStringAsFixed(1)}%',
+                            ),
+                          ),
+                        );
+                        },
+                      )
+                      : const Text("Tidak ada objek yang terdeteksi dengan confidence > 80%"),
+                    Center(
+                      child: IconButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => MainScreen(inputCategory: labels.first.label.toLowerCase())
+                              )
+                            );
+                          },
+                          icon: Icon(Icons.search)
+                      ),
+                    )
+                  ],
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

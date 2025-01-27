@@ -5,6 +5,8 @@ import 'package:belanjain/services/labeling_service.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_ml_kit/google_ml_kit.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:uuid/uuid.dart';
@@ -17,96 +19,154 @@ class KameraScreen extends StatefulWidget {
 }
 
 class _KameraScreenState extends State<KameraScreen> {
+  late final ImageLabeler _imageLabeler;
   List<CameraDescription> cameras = [];
   CameraController? controller;
   Future<void>? _initializeControllerFuture;
+  CustomPaint? _customPaint;
+  bool _isCameraReady = false;
 
   @override
   void initState() {
     super.initState();
-    requestPermissions();
-    _setupCameraController();
+    _initializeEverything();
+  }
+
+  Future<void> _initializeEverything() async {
+    await requestPermissions();
+    await _setupCameraController();
+    _initializeLabeler();
+  }
+
+  void _initializeLabeler() {
+    _imageLabeler = ImageLabeler(options: ImageLabelerOptions());
   }
 
   Future<void> requestPermissions() async {
-    if (!await Permission.camera.isGranted) {
-      await Permission.camera.request();
-    }
-    if (!await Permission.storage.isGranted) {
-      await Permission.storage.request();
-    }
+    final cameraStatus = await Permission.camera.request();
+    final storageStatus = await Permission.storage.request();
 
-    if (!await Permission.camera.isGranted) {
-      print("Izin kamera ditolak");
+    if (cameraStatus.isDenied || storageStatus.isDenied) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Permissions are required to use the camera')),
+      );
       return;
     }
   }
-
 
   Future<void> _setupCameraController() async {
     try {
       cameras = await availableCameras();
 
-      if (cameras.isNotEmpty) {
-        controller = CameraController(
-          cameras.first,
-          ResolutionPreset.high,
-        );
-
-        _initializeControllerFuture = controller!.initialize();
-        await _initializeControllerFuture;
-
-        await SystemChrome.setPreferredOrientations([
-          DeviceOrientation.portraitUp,
-          DeviceOrientation.portraitDown,
-        ]);
-
-        setState(() {});
-      } else {
-        print("Tidak ada kamera yang tersedia");
+      if (cameras.isEmpty) {
+        throw Exception('No cameras available');
       }
+
+      controller = CameraController(
+        cameras.first,
+        ResolutionPreset.high,
+      );
+
+      _initializeControllerFuture = controller!.initialize();
+      await _initializeControllerFuture;
+
+      await SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+      ]);
+
+      setState(() {
+        _isCameraReady = true;
+      });
     } catch (e) {
-      print("Gagal mengatur kamera: $e");
+      setState(() {
+        _isCameraReady = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to setup camera: $e')),
+      );
     }
   }
 
-
-  void takePicture() async {
+  Future<void> takePicture() async {
     try {
       if (controller == null || !controller!.value.isInitialized) {
-        print("Kamera belum siap");
-        return;
+        throw Exception('Camera not ready');
       }
 
-      String uuid = Uuid().v4();
-
+      final String uuid = const Uuid().v4();
       final XFile image = await controller!.takePicture();
-
       final Directory appDir = await getApplicationDocumentsDirectory();
       final String savedImagePath = '${appDir.path}/captured_image_$uuid.jpg';
-      // print("Saved image path $savedImagePath");
+
       await File(image.path).copy(savedImagePath);
 
-      //final path = 'assets/ml/object_labeler.tflite';
-      //final modelPath = await _getModel(path);
-      //final options = LocalLabelerOptions(modelPath: modelPath);
-      //_imageLabeler = ImageLabeler(options: options);
-      // LabelingService(savedImagePath);
+      if (!mounted) return;
+
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => ImageViewPage(imagePath: savedImagePath),
         ),
       );
-      print('Gambar berhasil disimpan di: $savedImagePath');
     } catch (e) {
-      print('Terjadi kesalahan saat mengambil atau menyimpan gambar: $e');
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error capturing image: $e')),
+      );
+    }
+  }
+
+  Future<void> processImage(InputImage inputImage) async {
+    try {
+      final labels = await _imageLabeler.processImage(inputImage);
+
+      setState(() {
+        if (inputImage.metadata?.size != null && inputImage.metadata?.rotation != null) {
+          final painter = LabelingService(labels);
+          _customPaint = CustomPaint(painter: painter);
+        }
+
+        print('Labels found: ${labels.length}');
+        for (final label in labels) {
+          print('Label: ${label.label}, Ketepatan: ${label.confidence.toStringAsFixed(2)}');
+        }
+      });
+    } catch (e) {
+      print('Error processing image: $e');
+    }
+  }
+
+  Future<void> getImageAndDetectObjects() async {
+    try {
+      final ImagePicker picker = ImagePicker();
+      final XFile? imageFile = await picker.pickImage(source: ImageSource.gallery);
+
+      if (imageFile == null) return;
+
+      final inputImage = InputImage.fromFilePath(imageFile.path);
+      final objectDetector = GoogleMlKit.vision.objectDetector(
+        options: ObjectDetectorOptions(
+          mode: DetectionMode.single,
+          classifyObjects: true,
+          multipleObjects: true,
+        ),
+      );
+
+      final List<DetectedObject> objects = await objectDetector.processImage(inputImage);
+
+      await objectDetector.close();
+
+      print('Detected ${objects.length} objects');
+    } catch (e) {
+      print('Error detecting objects: $e');
     }
   }
 
   @override
   void dispose() {
     controller?.dispose();
+    _imageLabeler.close();
     super.dispose();
   }
 
@@ -116,64 +176,64 @@ class _KameraScreenState extends State<KameraScreen> {
       body: FutureBuilder<void>(
         future: _initializeControllerFuture,
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.done) {
-            if (controller != null && controller!.value.isInitialized) {
-              return SafeArea(
-                child: Stack(
-                  children: [
-                    Positioned.fill(
-                      child: RotatedBox(
-                        quarterTurns: 1,
-                        child: AspectRatio(
-                          aspectRatio: controller!.value.aspectRatio,
-                          child: CameraPreview(controller!),
-                        ),
+          if (snapshot.connectionState == ConnectionState.done && _isCameraReady) {
+            return SafeArea(
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: RotatedBox(
+                      quarterTurns: 1,
+                      child: AspectRatio(
+                        aspectRatio: controller!.value.aspectRatio,
+                        child: CameraPreview(controller!),
                       ),
                     ),
-                    Align(
-                      alignment: Alignment.bottomCenter,
-                      child: Container(
-                        color: Colors.white.withOpacity(0.3),
-                        width: double.infinity,
-                        height: 100,
-                        child: Center(
-                          child: IconButton(
+                  ),
+                  if (_customPaint != null) _customPaint!,
+                  Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Container(
+                      color: Colors.black54,
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          IconButton(
                             onPressed: takePicture,
                             icon: const Icon(
                               Icons.camera_alt,
                               size: 40,
+                              color: Colors.white,
                             ),
                           ),
-                        ),
+                          IconButton(
+                            onPressed: getImageAndDetectObjects,
+                            icon: const Icon(
+                              Icons.photo_library,
+                              size: 40,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ],
-                ),
-              );
-            } else {
-              return const Center(
-                child: Text(
-                  'Kamera tidak dapat diinisialisasi',
-                  style: TextStyle(fontSize: 16),
-                ),
-              );
-            }
+                  ),
+                ],
+              ),
+            );
           } else if (snapshot.hasError) {
             return Center(
               child: Text(
-                'Terjadi kesalahan: ${snapshot.error}',
-                style: TextStyle(fontSize: 16),
+                'Error: ${snapshot.error}',
+                style: const TextStyle(fontSize: 16),
               ),
             );
-          } else {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
           }
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
         },
       ),
     );
   }
-
-
 }
