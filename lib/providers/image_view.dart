@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:belanjain/screen/main_screen.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_gemini/flutter_gemini.dart';
 import 'package:google_ml_kit/google_ml_kit.dart';
 
 class ImageViewPage extends StatefulWidget {
@@ -15,11 +17,27 @@ class _ImageViewPageState extends State<ImageViewPage> {
   bool isLoading = true;
   List<ImageLabel> labels = [];
   String error = '';
+  String categoryOutput = "";
 
   @override
   void initState() {
     super.initState();
     processImage();
+
+    Gemini.instance.text(
+        'From these categories: All, fragrances, furniture, beauty, groceries. Return only ONE word without any other text or explanation for input: ${labels.map((label) => label.label).join(", ")}. If none match, return "invalid"'
+    ).then((value) {
+      if (value?.output != null) {
+        setState(() {
+          categoryOutput = value!.output!.trim();
+        });
+      }
+    }).catchError((error) {
+      debugPrint('Error in Gemini prompt: $error');
+      setState(() {
+        categoryOutput = "not available";
+      });
+    });
   }
 
   Future<void> processImage() async {
@@ -124,14 +142,15 @@ class _ImageViewPageState extends State<ImageViewPage> {
                         );
                         },
                       )
-                      : const Text("Tidak ada objek yang terdeteksi dengan confidence > 80%"),
+                      : Text("Tidak ada objek yang terdeteksi dengan confidence > 80% $categoryOutput"),
                     Center(
                       child: IconButton(
                           onPressed: () {
+                            print("Category: $categoryOutput");
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => MainScreen(inputCategory: labels.first.label.toLowerCase())
+                                  builder: (context) => MainScreen(inputCategory: categoryOutput)
                               )
                             );
                           },

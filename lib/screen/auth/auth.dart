@@ -36,7 +36,7 @@ class _AuthScreenState extends State<AuthScreen> {
     if (!isLoggedIn) {
       return const Login();
     } else {
-      return const MainScreen();
+      return const MainScreen(inputCategory: "All");
     }
   }
 }

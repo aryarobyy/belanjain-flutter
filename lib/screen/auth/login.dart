@@ -39,7 +39,7 @@ class _LoginState extends State<Login> {
             );
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => const MainScreen()),
+              MaterialPageRoute(builder: (context) => const MainScreen(inputCategory: "All")),
             );
           }
 

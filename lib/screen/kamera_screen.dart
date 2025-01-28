@@ -155,6 +155,12 @@ class _KameraScreenState extends State<KameraScreen> {
 
       final List<DetectedObject> objects = await objectDetector.processImage(inputImage);
 
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ImageViewPage(imagePath: imageFile.path),
+        ),
+      );
       await objectDetector.close();
 
       print('Detected ${objects.length} objects');

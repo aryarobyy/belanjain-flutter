@@ -23,14 +23,11 @@ class _MainScreenState extends State<MainScreen> {
   bool _isSearching = false;
   final TextEditingController _searchController = TextEditingController();
 
-  final List<String> categories = ['All', 'fragrances', 'furniture', 'beauty', 'groceries', ];
+  final List<String> categories = ['All', 'fragrances', 'furniture', 'beauty', 'groceries',];
 
   @override
   void initState() {
     super.initState();
-    if(widget.inputCategory != null ){
-      _currentCategory = widget.inputCategory;
-    };
     _productProvider.loadProducts().then((_) {
       setState(() {});
     });
@@ -52,6 +49,16 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context){
+    if(widget.inputCategory != null ){
+      _currentCategory = widget.inputCategory;
+    };
+    if (!categories.contains(widget.inputCategory)) {
+      return Center(
+        child: Text(
+            "Tidak tersedia untuk Kategori ${widget.inputCategory}",
+        ),
+      );
+    }
     return Scaffold(
       appBar: AppBar(
         title: _isSearching
@@ -73,16 +80,16 @@ class _MainScreenState extends State<MainScreen> {
           if (_isSearching)
             Row(
               children: [
-                IconButton(
-                  icon: const Icon(Icons.camera_alt_outlined),
-                  onPressed: () {
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (context) {
-                          return KameraScreen();
-                        })
-                    );
-                  },
-                ),
+                // IconButton( //belum bisa dilanjut
+                //   icon: const Icon(Icons.camera_alt_outlined),
+                //   onPressed: () {
+                //     Navigator.push(context,
+                //         MaterialPageRoute(builder: (context) {
+                //           return KameraScreen();
+                //         })
+                //     );
+                //   },
+                // ),
                 IconButton(
                   icon: const Icon(Icons.close),
                   onPressed: _stopSearch,
